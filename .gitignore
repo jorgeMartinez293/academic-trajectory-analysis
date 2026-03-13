@@ -1,0 +1,20 @@
+# --- Archivos de sesión de R ---
+.RData
+.Rhistory
+.Rapp.history
+.RDataTmp
+
+# --- Archivos de proyecto ---
+.Rproj.user/
+*.Rproj
+
+# --- Carpetas de sistema y temporales ---
+.DS_Store
+.quarto/
+*.log
+
+# --- Datos pesados (opcional pero recomendado) ---
+# Si tus archivos de datos son muy grandes o privados, descomenta la siguiente línea:
+# data/
+
+calificaciones
