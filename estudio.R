@@ -71,18 +71,66 @@ print(correlacion_medias)
 PCA <- princomp(na.omit(notas_novatos, cor = TRUE))
 summary(PCA, loadings = TRUE)
 
-biplot(PCA) # Importante lo cerca que está nota de primero y nota de segundo de bachillerato
+# Aunque ya lo hemos visto en el summary, observamos gráficamente como debemos usar 2 componentes principales
+plot(eigen(cor(na.omit(notas_novatos)))$values,
+     type = "b",
+     xlab = "Número de componente", ylab = "Valores propios",
+     main = "Regla del Codo"
+)
+
+biplot(PCA) # Importante lo cerca que está nota de primero y nota de segundo de bachillerato, INTERPRETALO
 
 PCA$loadings -> L
+L # Viendo los loadings, podemos observar que la primera componente nos dice que tan buenos estudiantes son en general.
+# Y la segunda componente nos indica la diferencia que ha habido entre cuando llegaron al instituto y cuando salieron (ya que es negativo en los últimos cursos)
 PCA$scores -> S
+S
 
 which.max(S[, 2]) # El segundo dato es simplemente su índice después de quitar los nulos
 which.min(S[, 2])
 
-# Regla del codo para seleccionar el número de componentes (Screen plot)
-# Usaremos 'notas_novatos' sin NAs para que cor() y eigen() funcionen correctamente
-plot(eigen(cor(na.omit(notas_novatos)))$values,
-    type = "b",
-    xlab = "Número de componente", ylab = "Valores propios",
-    main = "Regla del Codo (Scree Plot)"
-)
+SAT<-cor(na.omit(notas_novatos),S)
+SAT # Destaca la buenísima saturación que hay en la componente 1
+COM2<-SAT[,1]**2 + SAT[,2]**2 # Comunalidad
+COM2 # Vemos que las notas están muy bien representadas en general.
+
+####################
+# Análisis cluster #
+####################
+
+# No sería necesario estandarizar, ya que de por sí las notas están en la misma escala (0-10)
+# Pero lo hacemos por si acaso, para que no haya ningún tipo de sesgo
+
+ds <- as.data.frame(scale(na.omit(notas_novatos)))
+plot(ds, pch=20)
+
+library(NbClust)
+NbClust(ds,method='complete',index='all')$Best.nc # nos dicen que debemos usar dos grupos
+
+set.seed(1234) # Establecemos una semilla para la reproducibilidad
+CA <- kmeans(ds, centers = 2, nstart = 25)
+CA
+
+# Guardamos los centroides
+C1<-CA$centers[1,]
+C2<-CA$centers[2,]
+
+# Creemos un dataframe con el grupo al que pertenecen incluido
+Y<-CA$cluster
+d1<-data.frame(na.omit(notas_novatos),Y)
+View(d1)
+
+library(cluster)
+clusplot(ds,CA$cluster,color=T,shade=T,labels=2,cex=0.5,lines=0)
+# Puesto que los grupos no son especialmente influenciados por la segunda componente 
+# principal, podemos interpretar que lo que nos separa es según la componente 1 principalmente,
+# que hemos comprobado antes que es que tan buen estudiante son, luego podemos interpretar
+# que los dos grupos que ha creado sería algo así como buenos y malos estudiantes
+
+CA$withinss # El segundo grupo está algo más disperso, también se puede observar en el gráfico
+
+# Concretamente, hemos obtenido una disminución del 0.57%
+1 - (CA$tot.withinss/CA$totss) # No hemos obtenido una disminución increíble, pero si aceptable.
+
+
+
