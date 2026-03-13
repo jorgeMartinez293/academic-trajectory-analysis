@@ -13,8 +13,5 @@
 .quarto/
 *.log
 
-# --- Datos pesados (opcional pero recomendado) ---
-# Si tus archivos de datos son muy grandes o privados, descomenta la siguiente línea:
-# data/
-
+# --- Otros ---
 calificaciones
